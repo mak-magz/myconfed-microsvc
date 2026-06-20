@@ -1,0 +1,21 @@
+# Go binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+
+# Workspace local configuration
+go.work.sum
+
+# Environment variables / secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# External dependencies (if vendoring)
+vendor/
