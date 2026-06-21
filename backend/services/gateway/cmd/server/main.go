@@ -1,39 +1,43 @@
 package main
 
 import (
-	"context"
-	"net"
+	"log/slog"
+	"os"
 
+	"github.com/gin-gonic/gin"
+	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/handler"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
-	listenAddr = ":50052" // Match gateway port
+	userSvcAddr = "localhost:50051"
+	listenAddr  = ":8080" // Match gateway port
 )
 
-type server struct {
-	// pb.UnimplementedGatewayServer
-}
-
 func main() {
-	ctx := context.Background()
+	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	log.Info("Starting gateway server...")
 
-	serverImpl := &server{}
-
-	// Create gRPC server
-	grpcServer := grpc.NewServer()
-	reflection.Register(grpcServer)
-	// pb.RegisterGatewayServer(grpcServer, serverImpl)
-
-	// Start listening
-	listener, err := net.Listen("tcp", listenAddr)
+	conn, err := grpc.NewClient(userSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		panic("failed to listen: " + err.Error())
+		log.Error("failed to connect to user service", "error", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	userClient := handler.NewHandler(userv1.NewUserServiceClient(conn))
+
+	r := gin.Default()
+	users := r.Group("/users")
+	{
+		users.GET("/:id", userClient.GetUser)
 	}
 
-	println("Gateway listening on", listenAddr)
-	if err = grpcServer.Serve(listener); err != nil {
-		panic("failed to serve: " + err.Error())
+	log.Info("Gateway server started", "addr", listenAddr)
+	if err := r.Run(listenAddr); err != nil {
+		log.Error("failed to run gateway server", "error", err)
+		os.Exit(1)
 	}
 }
