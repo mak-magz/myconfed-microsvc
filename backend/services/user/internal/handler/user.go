@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/mak-magz/myconfed-microsvc/backend/services/user/cmd/server/internal/service"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/service"
 )
 
 type Handler struct {

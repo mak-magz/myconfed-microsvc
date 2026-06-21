@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/mak-magz/myconfed-microsvc/backend/services/user/cmd/server/internal/repository"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/repository"
 )
 
 type Service struct {

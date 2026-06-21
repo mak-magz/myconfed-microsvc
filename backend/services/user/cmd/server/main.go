@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/mak-magz/myconfed-microsvc/backend/services/user/cmd/server/internal/handler"
-	"github.com/mak-magz/myconfed-microsvc/backend/services/user/cmd/server/internal/repository"
-	"github.com/mak-magz/myconfed-microsvc/backend/services/user/cmd/server/internal/service"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/handler"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/repository"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/service"
 )
 
 func main() {
