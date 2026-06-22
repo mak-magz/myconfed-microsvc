@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/config"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/handler"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -20,7 +21,9 @@ func main() {
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	log.Info("Starting gateway server...")
 
-	conn, err := grpc.NewClient(userSvcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	config := config.Load()
+
+	conn, err := grpc.NewClient(config.UserSvcURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error("failed to connect to user service", "error", err)
 		os.Exit(1)

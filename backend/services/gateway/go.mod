@@ -2,7 +2,11 @@ module github.com/mak-magz/myconfed-microsvc/backend/services/gateway
 
 go 1.26.4
 
-require google.golang.org/grpc v1.81.1
+require (
+	github.com/joho/godotenv v1.5.1
+	github.com/mak-magz/myconfed-microsvc/backend/gen v0.0.0-20260621072627-842a373ae2dc
+	google.golang.org/grpc v1.81.1
+)
 
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
