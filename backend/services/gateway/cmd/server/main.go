@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
@@ -28,7 +33,11 @@ func main() {
 		logger.Error("failed to connect to user service", "error", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() {
+		logger.Info("Closing user service connection...")
+		conn.Close()
+		logger.Info("User service connection closed")
+	}()
 
 	userClient := handler.NewHandler(userv1.NewUserServiceClient(conn))
 
@@ -38,9 +47,37 @@ func main() {
 		users.GET("/:id", userClient.GetUser)
 	}
 
-	logger.Info("Gateway server started", "addr", listenAddr)
-	if err := r.Run(listenAddr); err != nil {
-		logger.Error("failed to run gateway server", "error", err)
+	srv := &http.Server{
+		Addr:    listenAddr,
+		Handler: r,
+	}
+
+	errChan := make(chan error, 1)
+
+	go func() {
+		logger.Info("Starting gateway service...", "port", listenAddr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errChan <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
+		logger.Error("Failed to run gateway server", "error", err)
 		os.Exit(1)
+	case sig := <-quit:
+		logger.Info("Shutting down gateway server...", "signal", sig.String())
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := srv.Shutdown(ctx); err != nil {
+			logger.Error("Gateway server forced to shutdown", "error", err)
+		} else {
+			logger.Info("Gateway server stopped")
+		}
 	}
 }

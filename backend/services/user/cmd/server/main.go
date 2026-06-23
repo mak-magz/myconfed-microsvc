@@ -3,6 +3,8 @@ package main
 import (
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -29,7 +31,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	defer func() {
+		logger.Info("Closing database connection...")
+		db.Close()
+		logger.Info("Database connection closed")
+	}()
 
 	repo := repository.NewRepository()
 	svc := service.NewService(repo)
@@ -45,10 +51,24 @@ func main() {
 	userv1.RegisterUserServiceServer(grpcServer, hnd)
 	reflection.Register(grpcServer)
 
-	if err := grpcServer.Serve(listen); err != nil {
+	errChan := make(chan error, 1)
+	go func() {
+		logger.Info("Starting user service...", "port", config.GrpcPort)
+		if err := grpcServer.Serve(listen); err != nil && err != grpc.ErrServerStopped {
+			errChan <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
 		logger.Error("failed to serve", "error", err)
 		os.Exit(1)
+	case sig := <-quit:
+		logger.Info("Shutting down user service...", "signal", sig)
+		grpcServer.GracefulStop()
+		logger.Info("User service stopped")
 	}
-
-	logger.Info("User service started successfully", "port", config.GrpcPort)
 }
