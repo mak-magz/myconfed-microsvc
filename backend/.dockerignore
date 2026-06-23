@@ -1,0 +1,21 @@
+# Ignore local environment files (don't bake secrets into build context)
+**/.env
+**/.env.*
+
+# Ignore IDE settings
+.idea/
+.vscode/
+
+# Ignore compiled binaries / test files
+**/user-service
+**/gateway-service
+**/*.exe
+**/*.test
+**/*.out
+
+# Ignore vendor directory (if using vendor mode)
+**/vendor/
+
+# Ignore docker-compose files inside the backend context
+**/docker-compose.yml
+

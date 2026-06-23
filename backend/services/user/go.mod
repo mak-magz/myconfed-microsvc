@@ -2,9 +2,17 @@ module github.com/mak-magz/myconfed-microsvc/backend/services/user
 
 go 1.26.4
 
-require google.golang.org/grpc v1.81.1
+require (
+	github.com/lib/pq v1.10.9
+	github.com/mak-magz/myconfed-microsvc/backend/gen v0.0.0-20260621072627-842a373ae2dc
+	google.golang.org/grpc v1.81.1
+)
+
+require github.com/mak-magz/myconfed-microsvc/backend/pkg v0.0.0-20260623042108-2b66d4957efe
 
 require (
+	github.com/jmoiron/sqlx v1.4.0
+	github.com/joho/godotenv v1.5.1
 	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
