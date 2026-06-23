@@ -6,7 +6,7 @@ WORKDIR /app
 # Copy workspace config and dependencies first (improves build caching)
 COPY go.work go.work.sum ./
 COPY gen/go.mod gen/go.sum ./gen/
-# COPY pkg/go.mod pkg/go.sum ./pkg/
+COPY pkg/go.mod ./pkg/
 COPY services/user/go.mod services/user/go.sum ./services/user/
 COPY services/gateway/go.mod services/gateway/go.sum ./services/gateway/
 
@@ -14,7 +14,7 @@ RUN go work sync
 
 # Copy source code files
 COPY gen/ ./gen/
-# COPY pkg/ ./pkg/
+COPY pkg/ ./pkg/
 COPY services/user/ ./services/user/
 
 # Compile the binary statically
