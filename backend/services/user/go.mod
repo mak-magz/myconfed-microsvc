@@ -8,6 +8,8 @@ require (
 	google.golang.org/grpc v1.81.1
 )
 
+require github.com/mak-magz/myconfed-microsvc/backend/pkg v0.0.0-20260623042108-2b66d4957efe
+
 require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1

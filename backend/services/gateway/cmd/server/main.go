@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
+	"github.com/mak-magz/myconfed-microsvc/backend/pkg/logger"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/config"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/handler"
 	"google.golang.org/grpc"
@@ -18,14 +18,14 @@ const (
 )
 
 func main() {
-	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	log.Info("Starting gateway server...")
-
 	config := config.Load()
+
+	logger := logger.Init("gateway")
+	logger.Info("Starting gateway server...")
 
 	conn, err := grpc.NewClient(config.UserSvcURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Error("failed to connect to user service", "error", err)
+		logger.Error("failed to connect to user service", "error", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -38,9 +38,9 @@ func main() {
 		users.GET("/:id", userClient.GetUser)
 	}
 
-	log.Info("Gateway server started", "addr", listenAddr)
+	logger.Info("Gateway server started", "addr", listenAddr)
 	if err := r.Run(listenAddr); err != nil {
-		log.Error("failed to run gateway server", "error", err)
+		logger.Error("failed to run gateway server", "error", err)
 		os.Exit(1)
 	}
 }
