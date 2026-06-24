@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
 	"github.com/mak-magz/myconfed-microsvc/backend/pkg/logger"
+	"github.com/mak-magz/myconfed-microsvc/backend/pkg/middleware"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/config"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/gateway/internal/handler"
 	"google.golang.org/grpc"
@@ -42,6 +43,8 @@ func main() {
 	userClient := handler.NewHandler(userv1.NewUserServiceClient(conn))
 
 	r := gin.Default()
+	r.Use(middleware.RequestLogger())
+
 	users := r.Group("/users")
 	{
 		users.GET("/:id", userClient.GetUser)

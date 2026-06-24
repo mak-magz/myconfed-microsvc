@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/service"
@@ -18,7 +18,9 @@ func NewHandler(svc *service.Service) *Handler {
 }
 
 func (h *Handler) GetUser(c context.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error) {
-	fmt.Println("handler: GetUser", req.GetId())
+
+	slog.DebugContext(c, "user-svc GetUser", "id", req.GetId())
+
 	h.svc.GetUser(req.GetId())
 
 	return &userv1.GetUserResponse{

@@ -1,17 +1,18 @@
 package middleware
 
 import (
+	"context"
 	"log/slog"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	logger "github.com/mak-magz/myconfed-microsvc/backend/pkg/logger"
 )
 
-func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
+func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger.InfoContext(c.Request.Context(), "request", "method", c.Request.Method, "path", c.Request.URL.Path)
-
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
@@ -25,15 +26,14 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 		}
 
 		c.Header("X-Request-Id", requestID)
-		c.Set("request_id", requestID)
 
-		reqLogger := logger.With(
-			slog.String("request_id", requestID),
-			slog.String("method", method),
-			slog.String("path", path),
-		)
+		// Put Request ID in Gin context
+		c.Set(string(logger.RequestIDKey), requestID)
 
-		c.Set("logger", reqLogger)
+		// Inject Request ID into Go's standard Context
+		req := c.Request
+		ctx := context.WithValue(req.Context(), logger.RequestIDKey, requestID)
+		c.Request = req.WithContext(ctx)
 
 		c.Next()
 
@@ -46,16 +46,18 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 		}
 
 		fields := []any{
-			slog.String("ip", ip),
+			slog.String("client_ip", ip),
 			slog.Duration("latency", latency),
 			slog.Int("status", status),
+			slog.String("path", path),
+			slog.String("method", method),
 		}
 
 		if err != nil {
 			fields = append(fields, slog.Any("error", err.Err))
-			reqLogger.Error("request_failed", fields...)
+			slog.ErrorContext(ctx, "request_failed", fields...)
 		} else {
-			reqLogger.Info("request_completed", fields...)
+			slog.InfoContext(ctx, "request_completed", fields...)
 		}
 
 	}

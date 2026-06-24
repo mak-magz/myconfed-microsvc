@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mak-magz/myconfed-microsvc/backend/gen v0.0.0-20260621072627-842a373ae2dc
-	github.com/mak-magz/myconfed-microsvc/backend/pkg v0.0.0-20260623042108-2b66d4957efe
+	github.com/mak-magz/myconfed-microsvc/backend/pkg v0.0.0-20260624001310-37fe92e56472
 	google.golang.org/grpc v1.81.1
 )
 
@@ -21,6 +21,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
