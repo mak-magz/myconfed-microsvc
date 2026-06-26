@@ -10,6 +10,9 @@ COPY pkg/go.mod pkg/go.sum ./pkg/
 COPY services/user/go.mod services/user/go.sum ./services/user/
 COPY services/gateway/go.mod services/gateway/go.sum ./services/gateway/
 
+# Copy migration files
+COPY services/user/migrations /app/db/migrations
+
 RUN go work sync
 
 # Copy source code files
@@ -26,5 +29,6 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 COPY --from=builder /app/user-service .
+COPY --from=builder /app/db/migrations ./db/migrations
 
 CMD ["./user-service"]

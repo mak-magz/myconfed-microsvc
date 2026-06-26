@@ -1,17 +1,18 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
 	"github.com/mak-magz/myconfed-microsvc/backend/pkg/logger"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/config"
+	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/db"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/handler"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/repository"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/service"
@@ -25,19 +26,27 @@ func main() {
 	logger := logger.Init("user")
 	logger.Info("Starting user service...")
 
-	db, err := sqlx.Connect("postgres", config.DatabaseURL)
+	database, err := db.Connect(context.Background(), config.DatabaseURL)
+
+	err = database.Ping()
 	if err != nil {
 		logger.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
 
+	err = db.RunMigrations(context.Background(), database)
+	if err != nil {
+		logger.ErrorContext(context.Background(), "failed to run migrations", "error", err)
+		os.Exit(1)
+	}
+
 	defer func() {
 		logger.Info("Closing database connection...")
-		db.Close()
+		database.Close()
 		logger.Info("Database connection closed")
 	}()
 
-	repo := repository.NewRepository()
+	repo := repository.NewRepository(database)
 	svc := service.NewService(repo)
 	hnd := handler.NewHandler(svc)
 

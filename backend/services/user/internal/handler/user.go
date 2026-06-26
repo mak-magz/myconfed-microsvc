@@ -21,7 +21,7 @@ func (h *Handler) GetUser(c context.Context, req *userv1.GetUserRequest) (*userv
 
 	slog.DebugContext(c, "user-svc GetUser", "id", req.GetId())
 
-	h.svc.GetUser(req.GetId())
+	h.svc.GetUser(c, req.GetId())
 
 	return &userv1.GetUserResponse{
 		User: &userv1.User{

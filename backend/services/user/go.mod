@@ -10,7 +10,10 @@ require (
 
 require github.com/mak-magz/myconfed-microsvc/backend/pkg v0.0.0-20260623042108-2b66d4957efe
 
+require github.com/stretchr/testify v1.11.1 // indirect
+
 require (
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/net v0.51.0 // indirect
