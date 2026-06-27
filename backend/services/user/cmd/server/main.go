@@ -11,6 +11,7 @@ import (
 
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
 	"github.com/mak-magz/myconfed-microsvc/backend/pkg/logger"
+	"github.com/mak-magz/myconfed-microsvc/backend/pkg/middleware"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/config"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/db"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/handler"
@@ -56,7 +57,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(middleware.RequestIDUnaryServerInterceptor()),
+	)
 	userv1.RegisterUserServiceServer(grpcServer, hnd)
 	reflection.Register(grpcServer)
 

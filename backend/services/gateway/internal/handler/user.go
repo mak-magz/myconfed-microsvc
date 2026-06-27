@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	userv1 "github.com/mak-magz/myconfed-microsvc/backend/gen/user/v1"
+	"google.golang.org/grpc/metadata"
 )
 
 type Handler struct {
@@ -19,7 +20,10 @@ func NewHandler(userClient userv1.UserServiceClient) *Handler {
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
-	resp, err := h.userClient.GetUser(c, &userv1.GetUserRequest{
+	md := metadata.Pairs("x-request-id", c.Writer.Header().Get("x-request-id"))
+	grpcCtx := metadata.NewOutgoingContext(c.Request.Context(), md)
+
+	resp, err := h.userClient.GetUser(grpcCtx, &userv1.GetUserRequest{
 		Id: id,
 	})
 
