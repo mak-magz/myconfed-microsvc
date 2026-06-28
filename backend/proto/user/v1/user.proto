@@ -5,19 +5,80 @@ package user.v1;
 option go_package = "github.com/mak-magz/myconfed-microsvc/backend/gen/proto/user/v1;userv1";
 
 service UserService {
-    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  // To be moved to profile service GetProfile
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+
+  // Auth
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
 }
 
 message User {
-    string id = 1;
-    string name = 2;
-    string email = 3;
+  string id = 1;
+  string email = 2;
 }
 
 message GetUserRequest {
-	string id = 1;
+  string id = 1;
 }
 
 message GetUserResponse {
-	User user = 1;
+  User user = 1;
+}
+
+message Tokens {
+  string access_token = 1;
+  string refresh_token = 2;
+  // Seconds until the access token expires.
+  int64 expires_in = 3;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  Tokens tokens = 1;
+  User user = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  Tokens tokens = 1;
+  User user = 2;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  Tokens tokens = 1;
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string email = 3;
+  repeated string roles = 4;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
 }
