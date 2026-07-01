@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/mak-magz/myconfed-microsvc/backend/services/user/internal/domain"
 )
 
@@ -31,6 +32,7 @@ type User struct {
 
 var (
 	ErrUserNotFound = errors.New("user not found")
+	ErrEmailTaken   = errors.New("email already taken")
 )
 
 func NewRepository(db *sqlx.DB) Repository {
@@ -85,6 +87,12 @@ func (r *DBRepository) CreateUser(ctx context.Context, user *domain.User) (*doma
 		userRow.ID, userRow.Email, userRow.Password, userRow.CreatedAt, nil)
 
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			if pqErr.Constraint == "users_email_key" {
+				return nil, ErrEmailTaken
+			}
+		}
 		return nil, err
 	}
 

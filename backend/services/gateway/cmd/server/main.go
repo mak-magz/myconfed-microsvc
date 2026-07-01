@@ -48,6 +48,7 @@ func main() {
 	users := r.Group("/users")
 	{
 		users.GET("/:id", userClient.GetUser)
+		users.POST("/register", userClient.Register)
 	}
 
 	srv := &http.Server{

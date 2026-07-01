@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -13,6 +14,10 @@ import (
 type Service struct {
 	repo repository.Repository
 }
+
+var (
+	ErrEmailTaken = errors.New("email already taken")
+)
 
 func NewService(repo repository.Repository) *Service {
 	return &Service{repo: repo}

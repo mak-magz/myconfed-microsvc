@@ -22,6 +22,9 @@ func toGRPCError(err error) error {
 	case errors.Is(err, repository.ErrUserNotFound):
 		return status.Error(codes.NotFound, err.Error())
 
+	case errors.Is(err, repository.ErrEmailTaken):
+		return status.Error(codes.AlreadyExists, err.Error())
+
 	default:
 		// unknown / unexpected — don't leak internals to the client
 		slog.Error("unhandled error", "error", err)
@@ -53,6 +56,22 @@ func (h *Handler) GetUser(c context.Context, req *userv1.GetUserRequest) (*userv
 	}
 
 	return &userv1.GetUserResponse{
+		User: &userv1.User{
+			Id:    user.ID,
+			Email: user.Email,
+		},
+	}, nil
+}
+
+func (h *Handler) Register(ctx context.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error) {
+	slog.DebugContext(ctx, "handler Register", "email", req.GetEmail())
+
+	user, err := h.svc.CreateUser(ctx, req.GetEmail(), req.GetPassword())
+	if err != nil {
+		return nil, toGRPCError(err)
+	}
+
+	return &userv1.RegisterResponse{
 		User: &userv1.User{
 			Id:    user.ID,
 			Email: user.Email,
