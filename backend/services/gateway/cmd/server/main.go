@@ -49,6 +49,7 @@ func main() {
 	{
 		users.GET("/:id", userClient.GetUser)
 		users.POST("/register", userClient.Register)
+		users.POST("/login", userClient.Login)
 	}
 
 	srv := &http.Server{

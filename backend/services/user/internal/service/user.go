@@ -15,10 +15,6 @@ type Service struct {
 	repo repository.Repository
 }
 
-var (
-	ErrEmailTaken = errors.New("email already taken")
-)
-
 func NewService(repo repository.Repository) *Service {
 	return &Service{repo: repo}
 }
@@ -34,9 +30,9 @@ func (s *Service) GetUser(ctx context.Context, id string) (*domain.User, error) 
 	return user, nil
 }
 
-func (s *Service) GetUserByEmail(ctx context.Context, email string) {
+func (s *Service) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	slog.InfoContext(ctx, "service: GetUserByEmail", "email", email)
-	s.repo.GetUserByEmail(ctx, email)
+	return s.repo.GetUserByEmail(ctx, email)
 }
 
 func (s *Service) CreateUser(ctx context.Context, email, password string) (*domain.User, error) {
@@ -59,6 +55,29 @@ func (s *Service) CreateUser(ctx context.Context, email, password string) (*doma
 
 	if err != nil {
 		slog.ErrorContext(ctx, "service: failed to persist user", "error", err)
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *Service) Login(ctx context.Context, email, password string) (*domain.User, error) {
+	slog.InfoContext(ctx, "service: Login", "email", email)
+
+	user, err := s.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.ErrorContext(ctx, "service: user not found", "error", err)
+			return nil, domain.ErrInvalidCredentials
+		}
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			slog.ErrorContext(ctx, "service: password mismatch", "error", err)
+			return nil, domain.ErrInvalidCredentials
+		}
 		return nil, err
 	}
 

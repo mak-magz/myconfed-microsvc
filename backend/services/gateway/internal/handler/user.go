@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,11 +9,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
-
-type Service interface {
-	GetUser(ctx gin.Context, req *userv1.GetUserRequest) (*userv1.GetUserResponse, error)
-	Register(ctx gin.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error)
-}
 
 type Handler struct {
 	userv1.UnimplementedUserServiceServer
@@ -55,12 +49,34 @@ func (h *Handler) Register(c *gin.Context) {
 
 	resp, err := h.userClient.Register(grpcCtx, &req)
 	if err != nil {
-		slog.DebugContext(c, "faled", "error", err)
 		respondGRPCError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, resp.GetUser())
+}
+
+func (h *Handler) Login(c *gin.Context) {
+	var req userv1.LoginRequest
+
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	md := metadata.Pairs("x-request-id", c.Writer.Header().Get("x-request-id"))
+	grpcCtx := metadata.NewOutgoingContext(c.Request.Context(), md)
+
+	resp, err := h.userClient.Login(grpcCtx, &req)
+	if err != nil {
+		respondGRPCError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"tokens": resp.GetTokens(),
+		"user":   resp.GetUser(),
+	})
 }
 
 func httpStatusFromGRPC(code codes.Code) int {

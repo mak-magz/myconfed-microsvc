@@ -49,7 +49,7 @@ func (r *DBRepository) GetUserById(ctx context.Context, id string) (*domain.User
 
 	var user User
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, email, created_at, updated_at FROM users WHERE id = $1`, id).Scan(&user.ID, &user.Email, &user.CreatedAt, &user.UpdatedAt)
+		`SELECT id, email, password, created_at, updated_at FROM users WHERE id = $1`, id).Scan(&user.ID, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -109,9 +109,13 @@ func (r *DBRepository) GetUserByEmail(ctx context.Context, email string) (*domai
 
 	var user User
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, email, created_at, updated_at FROM users WHERE email = $1`, email).Scan(&user.ID, &user.Email, &user.CreatedAt, &user.UpdatedAt)
+		`SELECT id, email, password, created_at, updated_at FROM users WHERE email = $1`, email).Scan(&user.ID, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+
 		return nil, err
 	}
 
